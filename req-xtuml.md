@@ -27,7 +27,8 @@ Setiap class merepresentasikan objek dalam sistem.
   "class_id": "UnikID",
   "KL": "KEY",                // Key Letters (Singkatan)
   "attributes": [ ... ],
-  "states": [ ... ]
+  "states": [ ... ],
+  "operations": [ ... ]       // (Optional) Business Logic Methods
 }
 ```
 
@@ -36,23 +37,41 @@ Mendefinisikan data member dari class.
 
 ```json
 {
-  "attribute_name": "nama_atribut", // snake_case (e.g., phone_number)
-  "data_type": "String",            // Tipe: String, Integer, Real, Boolean
-  "default_value": "default",       // (Opsional)
+  "attribute_name": "nama_atribut",       // snake_case
+  "attribute_type": "naming_attribute",   // Tipe Atribut:
+                                          // - "naming_attribute" (Primary Key)
+                                          // - "descriptive_attribute" (Data biasa)
+                                          // - "referential_attribute" (Foreign Key)
+  "data_type": "string",                  // Pilihan: "id", "string", "integer", "real" (decimal), "datetime", "state"
+  "default_value": "default",             // (Opsional) Nilai awal
+                                          // Jika type "state", gunakan format: "states.nama_state_kecil"
   "attribute_id": "UnikID"
 }
 ```
 
 #### States (State Machine)
-Mendefinisikan perilaku dinamis class.
+Compiler ini menggunakan model **Global Transitions** dimana event terikat pada **Target State**.
 
 ```json
 {
-  "state_name": "NamaState",        // UPPER_CASE (e.g., WAITING_PAYMENT)
-  "state_type": "active",           // "active" atau "final"
-  "state_event": [ "event_name" ],  // Daftar event yang memicu transisi ke / dari sini
-  "action": "OAL Code...",          // Logika kode saat masuk state ini
+  "state_name": "NamaState",        // UPPER_CASE disarankan
+  "state_type": "string",           // Biasanya "string"
+  "state_value": "state_value",     // lowercase value
+  "state_event": [ "evt_trigger" ], // Daftar event yang memicu transisi KE state ini
+                                    // (Dari state mana saja)
+  "action": "OAL Code...",          // Logika yang dijalankan saat masuk state ini
   "state_id": "UnikID"
+}
+```
+
+#### Operations (Methods)
+Mendefinisikan fungsi/method tambahan dalam class (selain state action).
+
+```json
+{
+  "name": "calculate_tax",
+  "return_type": "decimal",         // void, string, integer, decimal
+  "action": "tax = 100 * 0.1;"      // OAL Code body
 }
 ```
 
@@ -66,11 +85,11 @@ Mendefinisikan hubungan antar class.
   "class": [
     {
       "class_name": "ClassA",
-      "class_multiplicity": "1"     // "1" atau "*"
+      "class_multiplicity": "1"     // "0..1", "1..1", "0..*", "1..*"
     },
     {
       "class_name": "ClassB",
-      "class_multiplicity": "*"
+      "class_multiplicity": "0..*"
     }
   ]
 }
@@ -89,7 +108,8 @@ Compiler ini mendukung subset OAL berikut di dalam property `action`:
 | **Delete** | `delete var` | `delete r` |
 | **If Condition** | `if (cond)` ... `end if` | `if (count > 5) ... end if` |
 | **Property Access** | `var.attribute` | `c.name` |
-| **Timer** | `create timer t event evt to target delay ms` | `create timer t event timeout to self delay 1000` |
+| **Timer** | `create timer t event evt to target delay ms` | `create timer t event setExpired to self delay 1000` |
+| **Date** | `create date var` | `create date now` |
 | **Debug** | `Bridge::log("msg")` | `Bridge::log("Processing...")` |
 
 ## 4. Generic Features
@@ -97,6 +117,9 @@ Compiler ini bersifat **Generic**. Artinya:
 *   Tidak ada hardcoding nama atribut di compiler.
 *   Anda bebas membuat atribut apa saja (misal: `saldo`, `umur`, `status`).
 *   ActionTranslator otomatis mengubah `saldo` menjadi `getSaldo()`.
+*   Compiler membedakan konteks:
+    *   `select ... where x == y` \u2192 `candidate.getX()`
+    *   `if (x == y)` \u2192 `this.getX()`
 
 ## 5. Constraint
 *   **Unique IDs**: Setiap ID (`class_id`, `state_id`) harus unik.

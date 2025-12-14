@@ -11,28 +11,28 @@ Tujuan utamanya adalah **Otomasi Coding**: Developer cukup mendesain diagram kel
 Berdasarkan spesifikasi tugas (`req.md`), sistem ini telah memenuhi **20 dari 21** komponen utama (~95% Compliance). Berikut detailnya:
 
 ### A. Struktur & Data (Structural)
-| Requirement | Status | Bukti Implementasi |
+| Requirement | Status | Bukti Implementasi (File & Line) |
 | :--- | :---: | :--- |
-| **Instance Creation** | ✅ | `ObjectBroker.add(this)` di constructor class. |
-| **Attributes (Read/Write)** | ✅ | Getter/Setter otomatis dan akses variabel di OAL. |
-| **Instance Deletion** | ✅ | Perintah `delete self` di OAL men-trigger `this.delete()`. |
-| **Relationships (Create)** | ✅ | `relate self to console across R2` (Link object di runtime). |
-| **Relationships (Delete)** | ✅ | `unrelate self from console across R2`. |
-| **Date & Time** | ✅ | Tipe data `datetime` dan perintah `create date now`. |
+| **Instance Creation** | ✅ | `JavaSourceGenerator.java` (Lines 102-104) - Constructor calls `ObjectBroker.add(this)`. |
+| **Attributes (Read/Write)** | ✅ | `JavaSourceGenerator.java` (Lines 113-130) - Auto-generated Getters & Setters. |
+| **Instance Deletion** | ✅ | `JavaSourceGenerator.java` (Lines 204-209) override delete; `ActionTranslator.java` (Lines 146-155) triggers it. |
+| **Relationships (Create)** | ✅ | `ActionTranslator.java` (Lines 69-81) - `RelationshipManager.relate(...)`. |
+| **Relationships (Delete)** | ✅ | `ActionTranslator.java` (Lines 83-95) - `RelationshipManager.unrelate(...)`. |
+| **Date & Time** | ✅ | `ActionTranslator.java` (Lines 139-144) - Maps `create date` to `LocalDateTime.now()`. |
 
 ### B. Logika & Behavior (Behavioral)
-| Requirement | Status | Bukti Implementasi |
+| Requirement | Status | Bukti Implementasi (File & Line) |
 | :--- | :---: | :--- |
-| **Control Logic** | ✅ | Sintaks `if (kondisi) ... end if` di OAL diterjemahkan ke Java `if`. |
-| **Instance Selection** | ✅ | `select any variables from instances ...` menggunakan Java Streams API. |
-| **Event Creation** | ✅ | Konstanta Event ID digenerate otomatis di class. |
-| **Event Generation** | ✅ | `generate Event` dan `create timer` untuk event tertunda. |
-| **Event Processing** | ✅ | State Machine Engine (`processEvent` + `switch-case` states). |
-| **Operations** | ✅ | Class `Rate` memiliki operasi `calculate_tax`. |
-| **Arithmetic/Math** | ✅ | Perhitungan `tax = 1000 * 0.1` diterjemahkan langsung. |
-| **Timers** | ✅ | `TimerService` untuk menjadwalkan event masa depan. |
-| **Bridges** | ✅ | `Bridge::log(...)` memanggil `System.out.println`. |
-| **Unary Operators** | ⚠️ | *Partial*: Logika biner (`*`, `==`) sudah ada, unary spesifik (`!`, `++`) belum eksplisit di contoh tapi didukung struktur. |
+| **Control Logic** | ✅ | `ActionTranslator.java` (Lines 157-166) - Maps `if`/`end if` to Java syntax. |
+| **Instance Selection** | ✅ | `ActionTranslator.java` (Lines 44-67) - `ObjectBroker.selectAll(...).stream()`. |
+| **Event Creation** | ✅ | `JavaSourceGenerator.java` (Lines 52-71) - Generates `public static final int EVENT_...`. |
+| **Event Generation** | ✅ | `ActionTranslator.java` (Lines 122-126) - Creates `XtUmlEvent` objects. |
+| **Event Processing** | ✅ | `JavaSourceGenerator.java` (Lines 132-172) - Generates `processEvent` switch-case. |
+| **Operations** | ✅ | `JavaSourceGenerator.java` (Lines 179-201) - Generates methods from model operations. |
+| **Arithmetic/Math** | ✅ | `ActionTranslator.java` (Lines 168-174) - Parses assignments and math expressions. |
+| **Timers** | ✅ | `ActionTranslator.java` (Lines 113-127) - Calls `TimerService`. |
+| **Bridges** | ✅ | `ActionTranslator.java` (Lines 129-137) - Maps `Bridge::log` to `System.out.println`. |
+| **Unary Operators** | ⚠️ | *Partial*: Binary logic supported. Unary logic inferred in `translateCondition`. |
 
 ---
 

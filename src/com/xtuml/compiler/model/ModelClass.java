@@ -19,9 +19,20 @@ public class ModelClass extends XtUmlModelElement {
 
     @JsonProperty("states")
     private List<State> states;
-    
+
     @JsonProperty("operations")
     private List<Operation> operations;
+
+    @JsonProperty("supertype")
+    private String supertype;
+
+    public String getSupertype() {
+        return supertype;
+    }
+
+    public void setSupertype(String supertype) {
+        this.supertype = supertype;
+    }
 
     public String getClassId() {
         return classId;

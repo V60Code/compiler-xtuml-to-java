@@ -101,163 +101,163 @@ public class Rental extends BaseModel {
         switch (currentState) {
             case PENDING:
                 if (e.getEventId() == EVENT_END_TIME_PASSED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 else if (e.getEventId() == EVENT_SETCANCELED) {
-                    action_CANCELED();
+                    action_CANCELED(e);
                     this.currentState = State.CANCELED;
                 }
                 else if (e.getEventId() == EVENT_PAY_CONFIRMED) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_SETEXPIRED) {
-                    action_EXPIRED();
+                    action_EXPIRED(e);
                     this.currentState = State.EXPIRED;
                 }
                 else if (e.getEventId() == EVENT_SETCOMPLETED) {
-                    action_COMPLETED();
+                    action_COMPLETED(e);
                     this.currentState = State.COMPLETED;
                 }
                 else if (e.getEventId() == EVENT_CANCEL_REQUEST) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_UNIT_RETURNED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 break;
             case RENTED:
                 if (e.getEventId() == EVENT_END_TIME_PASSED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 else if (e.getEventId() == EVENT_SETCANCELED) {
-                    action_CANCELED();
+                    action_CANCELED(e);
                     this.currentState = State.CANCELED;
                 }
                 else if (e.getEventId() == EVENT_PAY_CONFIRMED) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_SETEXPIRED) {
-                    action_EXPIRED();
+                    action_EXPIRED(e);
                     this.currentState = State.EXPIRED;
                 }
                 else if (e.getEventId() == EVENT_SETCOMPLETED) {
-                    action_COMPLETED();
+                    action_COMPLETED(e);
                     this.currentState = State.COMPLETED;
                 }
                 else if (e.getEventId() == EVENT_CANCEL_REQUEST) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_UNIT_RETURNED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 break;
             case EXPIRED:
                 if (e.getEventId() == EVENT_END_TIME_PASSED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 else if (e.getEventId() == EVENT_SETCANCELED) {
-                    action_CANCELED();
+                    action_CANCELED(e);
                     this.currentState = State.CANCELED;
                 }
                 else if (e.getEventId() == EVENT_PAY_CONFIRMED) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_SETEXPIRED) {
-                    action_EXPIRED();
+                    action_EXPIRED(e);
                     this.currentState = State.EXPIRED;
                 }
                 else if (e.getEventId() == EVENT_SETCOMPLETED) {
-                    action_COMPLETED();
+                    action_COMPLETED(e);
                     this.currentState = State.COMPLETED;
                 }
                 else if (e.getEventId() == EVENT_CANCEL_REQUEST) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_UNIT_RETURNED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 break;
             case COMPLETED:
                 if (e.getEventId() == EVENT_END_TIME_PASSED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 else if (e.getEventId() == EVENT_SETCANCELED) {
-                    action_CANCELED();
+                    action_CANCELED(e);
                     this.currentState = State.CANCELED;
                 }
                 else if (e.getEventId() == EVENT_PAY_CONFIRMED) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_SETEXPIRED) {
-                    action_EXPIRED();
+                    action_EXPIRED(e);
                     this.currentState = State.EXPIRED;
                 }
                 else if (e.getEventId() == EVENT_SETCOMPLETED) {
-                    action_COMPLETED();
+                    action_COMPLETED(e);
                     this.currentState = State.COMPLETED;
                 }
                 else if (e.getEventId() == EVENT_CANCEL_REQUEST) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_UNIT_RETURNED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 break;
             case CANCELED:
                 if (e.getEventId() == EVENT_END_TIME_PASSED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 else if (e.getEventId() == EVENT_SETCANCELED) {
-                    action_CANCELED();
+                    action_CANCELED(e);
                     this.currentState = State.CANCELED;
                 }
                 else if (e.getEventId() == EVENT_PAY_CONFIRMED) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_SETEXPIRED) {
-                    action_EXPIRED();
+                    action_EXPIRED(e);
                     this.currentState = State.EXPIRED;
                 }
                 else if (e.getEventId() == EVENT_SETCOMPLETED) {
-                    action_COMPLETED();
+                    action_COMPLETED(e);
                     this.currentState = State.COMPLETED;
                 }
                 else if (e.getEventId() == EVENT_CANCEL_REQUEST) {
-                    action_PENDING();
+                    action_PENDING(e);
                     this.currentState = State.PENDING;
                 }
                 else if (e.getEventId() == EVENT_UNIT_RETURNED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 break;
         }
     }
 
-    private void action_PENDING() {
+    private void action_PENDING(XtUmlEvent rcvd_evt) {
         System.out.println("Entering state: PENDING");
         System.out.println("Rental request pending payment.");
     }
 
-    private void action_RENTED() {
+    private void action_RENTED(XtUmlEvent rcvd_evt) {
         System.out.println("Entering state: RENTED");
         java.time.LocalDateTime now = java.time.LocalDateTime.now();
         System.out.println("Unit rented successfully.");
@@ -267,7 +267,7 @@ public class Rental extends BaseModel {
         RelationshipManager.getInstance().relate(this, console, "R2", null);
     }
 
-    private void action_EXPIRED() {
+    private void action_EXPIRED(XtUmlEvent rcvd_evt) {
         System.out.println("Entering state: EXPIRED");
         System.out.println("Rental expired.");
         PSConsole console = (PSConsole) RelationshipManager.getInstance().getRelated(this, "R2", null).stream()
@@ -275,7 +275,7 @@ public class Rental extends BaseModel {
         RelationshipManager.getInstance().unrelate(this, console, "R2", null);
     }
 
-    private void action_COMPLETED() {
+    private void action_COMPLETED(XtUmlEvent rcvd_evt) {
         System.out.println("Entering state: COMPLETED");
         System.out.println("Rental completed.");
         if (this.getEnd_time() == null) {
@@ -283,7 +283,7 @@ public class Rental extends BaseModel {
         }
     }
 
-    private void action_CANCELED() {
+    private void action_CANCELED(XtUmlEvent rcvd_evt) {
         System.out.println("Entering state: CANCELED");
         System.out.println("Rental canceled.");
         this.delete();

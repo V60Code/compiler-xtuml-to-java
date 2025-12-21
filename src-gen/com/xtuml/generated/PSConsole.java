@@ -79,86 +79,86 @@ public class PSConsole extends BaseModel {
         switch (currentState) {
             case AVAILABLE:
                 if (e.getEventId() == EVENT_ONAVAILABLE) {
-                    action_AVAILABLE();
+                    action_AVAILABLE(e);
                     this.currentState = State.AVAILABLE;
                 }
                 else if (e.getEventId() == EVENT_SETAVAILABLE) {
-                    action_AVAILABLE();
+                    action_AVAILABLE(e);
                     this.currentState = State.AVAILABLE;
                 }
                 else if (e.getEventId() == EVENT_ONRENTED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 else if (e.getEventId() == EVENT_SETMAINTENANCE) {
-                    action_MAINTENANCE();
+                    action_MAINTENANCE(e);
                     this.currentState = State.MAINTENANCE;
                 }
                 else if (e.getEventId() == EVENT_SETRENTED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 break;
             case RENTED:
                 if (e.getEventId() == EVENT_ONAVAILABLE) {
-                    action_AVAILABLE();
+                    action_AVAILABLE(e);
                     this.currentState = State.AVAILABLE;
                 }
                 else if (e.getEventId() == EVENT_SETAVAILABLE) {
-                    action_AVAILABLE();
+                    action_AVAILABLE(e);
                     this.currentState = State.AVAILABLE;
                 }
                 else if (e.getEventId() == EVENT_ONRENTED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 else if (e.getEventId() == EVENT_SETMAINTENANCE) {
-                    action_MAINTENANCE();
+                    action_MAINTENANCE(e);
                     this.currentState = State.MAINTENANCE;
                 }
                 else if (e.getEventId() == EVENT_SETRENTED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 break;
             case MAINTENANCE:
                 if (e.getEventId() == EVENT_ONAVAILABLE) {
-                    action_AVAILABLE();
+                    action_AVAILABLE(e);
                     this.currentState = State.AVAILABLE;
                 }
                 else if (e.getEventId() == EVENT_SETAVAILABLE) {
-                    action_AVAILABLE();
+                    action_AVAILABLE(e);
                     this.currentState = State.AVAILABLE;
                 }
                 else if (e.getEventId() == EVENT_ONRENTED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 else if (e.getEventId() == EVENT_SETMAINTENANCE) {
-                    action_MAINTENANCE();
+                    action_MAINTENANCE(e);
                     this.currentState = State.MAINTENANCE;
                 }
                 else if (e.getEventId() == EVENT_SETRENTED) {
-                    action_RENTED();
+                    action_RENTED(e);
                     this.currentState = State.RENTED;
                 }
                 break;
         }
     }
 
-    private void action_AVAILABLE() {
+    private void action_AVAILABLE(XtUmlEvent rcvd_evt) {
         System.out.println("Entering state: AVAILABLE");
         System.out.println("Console is now available for rent.");
     }
 
-    private void action_RENTED() {
+    private void action_RENTED(XtUmlEvent rcvd_evt) {
         System.out.println("Entering state: RENTED");
         System.out.println("Console has been rented.");
         com.xtuml.runtime.XtUmlEvent evt = new com.xtuml.runtime.XtUmlEvent(this.getInstanceId(), EVENT_SETAVAILABLE, null);
 com.xtuml.runtime.TimerService.getInstance().startTimer(3600, evt);
     }
 
-    private void action_MAINTENANCE() {
+    private void action_MAINTENANCE(XtUmlEvent rcvd_evt) {
         System.out.println("Entering state: MAINTENANCE");
         System.out.println("Console is under maintenance.");
         java.time.LocalDateTime now = java.time.LocalDateTime.now();

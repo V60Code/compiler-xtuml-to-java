@@ -67,6 +67,38 @@ public class Main {
             System.out.println("\nOAL Input: " + sampleRelate);
             System.out.println("Java Output:\n" + translator.translateAction(sampleRelate));
 
+            System.out.println("\n--- Extended OAL Verification ---");
+            String loopOal = "for each item in itemList";
+            String whileOal = "while (list.not_empty and x == 5)";
+
+            System.out.println("OAL: " + loopOal);
+            System.out.println("Java: " + translator.translateAction(loopOal));
+
+            System.out.println("OAL: " + whileOal);
+            System.out.println("Java: " + translator.translateAction(whileOal));
+
+            System.out.println("\n--- 52-Rule Compliance Check ---");
+            String createOal = "create object instance c of Customer";
+            String selectManyOal = "select many users from instances of User where age > 18";
+            String generateOal = "generate SIGNAL1 to myTarget";
+            String elifOal = "elif (x > 10)";
+            String assignOal = "area = width * height"; // Should become this.getWidth() * this.getHeight()
+
+            System.out.println("1. Create: " + translator.translateAction(createOal));
+            System.out.println("2. Select Many: " + translator.translateAction(selectManyOal));
+            System.out.println("3. Generate: " + translator.translateAction(generateOal));
+            System.out.println("4. Elif: " + translator.translateAction(elifOal));
+            System.out.println("5. Assign resolving: " + translator.translateAction(assignOal));
+
+            System.out.println("\n--- Final 3 Items Compliance Check ---");
+            String relateUsingOal = "relate car to user across R1 using rent_agreement";
+            String genClassOal = "generate STOP to class Car";
+            String genCreatorOal = "generate ACK to creator";
+
+            System.out.println("6. Relate Using: " + translator.translateAction(relateUsingOal));
+            System.out.println("7. Gen Class: " + translator.translateAction(genClassOal));
+            System.out.println("8. Gen Creator: " + translator.translateAction(genCreatorOal));
+
             // Phase 5 Verification: Event & State Machine Runtime
             System.out.println("\n--- Phase 5: Event Runtime Verification ---");
             System.out.println("Simulating a generated class 'MockConsole'...");
@@ -89,11 +121,11 @@ public class Main {
                     if (currentState == State.AVAILABLE && e.getEventId() == 1) {
                         System.out.println(" [MockConsole] Event received. Transitioning AVAILABLE -> RENTED");
                         currentState = State.RENTED;
-                        action_Rented();
+                        action_Rented(e);
                     }
                 }
 
-                private void action_Rented() {
+                private void action_Rented(com.xtuml.runtime.XtUmlEvent rcvd_evt) {
                     System.out.println(" [MockConsole] Executing Action: Console is now rented.");
                 }
             }
@@ -150,6 +182,19 @@ public class Main {
                 System.out.println("Written Auto-Runner: " + runFile.getAbsolutePath());
             } catch (java.io.IOException ex) {
                 System.err.println("Error writing RunSystem: " + ex.getMessage());
+            }
+
+            // Phase 8: Generate Interactive Console App
+            System.out.println("\n--- Phase 8: Generate Interactive Console App ---");
+            ConsoleAppGenerator consoleGen = new ConsoleAppGenerator();
+            String interactiveCode = consoleGen.generateInteractiveApp(model);
+
+            java.io.File appFile = new java.io.File(dir, "InteractiveApp.java");
+            try (java.io.FileWriter fw = new java.io.FileWriter(appFile)) {
+                fw.write(interactiveCode);
+                System.out.println("Written Interactive App: " + appFile.getAbsolutePath());
+            } catch (java.io.IOException ex) {
+                System.err.println("Error writing InteractiveApp: " + ex.getMessage());
             }
 
         } catch (Exception e) {

@@ -4,9 +4,11 @@ import com.xtuml.runtime.BaseModel;
 import com.xtuml.runtime.EventDispatcher;
 import com.xtuml.runtime.ObjectBroker;
 import com.xtuml.runtime.XtUmlEvent;
+import com.xtuml.runtime.RelationshipManager;
 import java.util.Scanner;
 import java.util.UUID;
 import java.util.List;
+import java.util.ArrayList;
 
 public class InteractiveApp {
 
@@ -14,48 +16,148 @@ public class InteractiveApp {
 
     public static void main(String[] args) {
         System.out.println("=== xtUML Interactive Console ===");
-        // Run automatically generated system runner if exists
-        // RunSystem.main(args); // Optional: if we want to pre-populate data
-
         while (true) {
-            System.out.println("\n--- Main Menu ---");
-            System.out.println("1. Customer");
-            System.out.println("2. PSConsole");
-            System.out.println("3. Rate");
-            System.out.println("4. Rental");
+            System.out.println("\n--- Rental Shop Cashier ---");
+            System.out.println("1. Sewa Baru (New Rental)");
+            System.out.println("2. Pengembalian (Return Unit)");
+            System.out.println("3. Cek Stok (Check Availability)");
+            System.out.println("4. Admin Mode (Generic View)");
             System.out.println("5. Exit");
             System.out.print("Select an option: ");
 
             String input = scanner.nextLine();
-            try {
-                int choice = Integer.parseInt(input);
-                if (choice == 5) {
-                    System.out.println("Exiting...");
-                    break;
-                }
+            if (input.equals("5")) {
+                System.out.println("Exiting...");
+                break;
+            }
 
-                switch (choice) {
-                    case 1:
-                        manageCustomer();
-                        break;
-                    case 2:
-                        managePSConsole();
-                        break;
-                    case 3:
-                        manageRate();
-                        break;
-                    case 4:
-                        manageRental();
-                        break;
-                    default:
-                        System.out.println("Invalid option.");
-                }
-            } catch (NumberFormatException e) {
-                System.out.println("Invalid input. Please enter a number.");
+            if (input.equals("1")) {
+                manageNewRental();
+            } else if (input.equals("2")) {
+                manageReturnUnit();
+            } else if (input.equals("3")) {
+                checkAvailability();
+            } else if (input.equals("4")) {
+                manageAdminMode();
+            } else {
+                System.out.println("Invalid option.");
             }
             
-            // Process any pending events after user interaction
             EventDispatcher.getInstance().processQueue();
+        }
+    }
+
+    private static void manageNewRental() {
+        System.out.println("\n--- New Rental Transaction ---");
+        System.out.print("Enter Customer Name: ");
+        String name = scanner.nextLine();
+        Customer cust = new Customer();
+        cust.setCustomer_id(UUID.randomUUID());
+        cust.setName(name);
+        System.out.println("Customer '" + name + "' created.");
+
+        System.out.println("Available Consoles:");
+        List<PSConsole> allConsoles = ObjectBroker.getInstance().selectAll(PSConsole.class);
+        List<PSConsole> availableConsoles = new ArrayList<>();
+        for (PSConsole c : allConsoles) {
+            if ("available".equalsIgnoreCase(c.getAvailability())) {
+                availableConsoles.add(c);
+            }
+        }
+        if (availableConsoles.isEmpty()) {
+            System.out.println("No consoles available!");
+            return;
+        }
+        for (int i = 0; i < availableConsoles.size(); i++) {
+            System.out.println((i + 1) + ". " + availableConsoles.get(i).getModel());
+        }
+        System.out.print("Select Console: ");
+        int consoleIdx = -1;
+        try {
+            consoleIdx = Integer.parseInt(scanner.nextLine()) - 1;
+        } catch(Exception e) {}
+        if (consoleIdx < 0 || consoleIdx >= availableConsoles.size()) {
+            System.out.println("Invalid selection.");
+            return;
+        }
+        PSConsole console = availableConsoles.get(consoleIdx);
+
+        System.out.print("Enter Duration (hours): ");
+        int hours = 0;
+        try {
+            hours = Integer.parseInt(scanner.nextLine());
+        } catch(Exception e) {}
+
+        Rental r = new Rental();
+        r.setRental_id(UUID.randomUUID());
+        r.setStart_time(java.time.LocalDateTime.now());
+        r.setEnd_time(java.time.LocalDateTime.now().plusHours(hours));
+        r.setStatus("pending");
+        RelationshipManager.getInstance().relate(r, cust, "R1", null);
+        RelationshipManager.getInstance().relate(r, console, "R2", null);
+        XtUmlEvent event = new XtUmlEvent(console.getInstanceId(), PSConsole.EVENT_SETRENTED, null);
+        EventDispatcher.getInstance().enqueue(event);
+        System.out.println("Success! " + cust.getName() + " is renting " + console.getModel() + " for " + hours + " hours.");
+    }
+
+    private static void manageReturnUnit() {
+        System.out.println("\n--- Return Unit ---");
+        List<Rental> rentals = ObjectBroker.getInstance().selectAll(Rental.class);
+        List<Rental> activeRentals = new ArrayList<>();
+        for (Rental r : rentals) {
+            if (!"completed".equalsIgnoreCase(r.getStatus()) && !"canceled".equalsIgnoreCase(r.getStatus())) {
+                activeRentals.add(r);
+            }
+        }
+        if (activeRentals.isEmpty()) {
+            System.out.println("No active rentals.");
+            return;
+        }
+        for (int i = 0; i < activeRentals.size(); i++) {
+            Rental r = activeRentals.get(i);
+            // Try to find related customer/console name for display if possible, but for now just ID/Status
+            System.out.println((i + 1) + ". Rental [" + r.getStatus() + "] - " + r.getInstanceId().toString().substring(0,8));
+        }
+        System.out.print("Select Rental to Return: ");
+        int idx = -1;
+        try {
+            idx = Integer.parseInt(scanner.nextLine()) - 1;
+        } catch(Exception e) {}
+        if (idx < 0 || idx >= activeRentals.size()) {
+            System.out.println("Invalid selection.");
+            return;
+        }
+        Rental target = activeRentals.get(idx);
+        XtUmlEvent event = new XtUmlEvent(target.getInstanceId(), Rental.EVENT_UNIT_RETURNED, null);
+        EventDispatcher.getInstance().enqueue(event);
+        System.out.println("Unit return processed (Event fired).");
+    }
+
+    private static void checkAvailability() {
+        System.out.println("\n--- Console Availability ---");
+        List<PSConsole> all = ObjectBroker.getInstance().selectAll(PSConsole.class);
+        if (all.isEmpty()) System.out.println("No consoles in system.");
+        for (PSConsole c : all) {
+            System.out.println("- " + c.getModel() + ": " + c.getAvailability());
+        }
+    }
+
+    private static void manageAdminMode() {
+        while (true) {
+            System.out.println("\n--- Admin Mode (Generic) ---");
+            System.out.println("1. Customer");
+            System.out.println("2. PSConsole");
+            System.out.println("3. Rate");
+            System.out.println("4. Rental");
+            System.out.println("5. Back");
+            System.out.print("Select option: ");
+            String inp = scanner.nextLine();
+            if (inp.equals("5")) return;
+            if (inp.equals("1")) manageCustomer();
+            else if (inp.equals("2")) managePSConsole();
+            else if (inp.equals("3")) manageRate();
+            else if (inp.equals("4")) manageRental();
+            else System.out.println("Invalid.");
         }
     }
 
@@ -83,28 +185,13 @@ public class InteractiveApp {
     private static void createCustomer() {
         System.out.println("Creating Customer...");
         Customer instance = new Customer();
-        System.out.print("Enter customer_id (id): ");
-        try {
-            String val = scanner.nextLine();
-            // ID handling: input string is converted to UUID bytes or hash?
-            // For simplicity, we'll try to parse or generate random if empty
-            if (val.trim().isEmpty()) {
-                instance.setCustomer_id(UUID.randomUUID());
-            } else {
-                try {
-                    instance.setCustomer_id(UUID.fromString(val));
-                } catch (IllegalArgumentException e) {
-                    // Fallback for non-standard UUID strings
-                    instance.setCustomer_id(UUID.nameUUIDFromBytes(val.getBytes()));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error setting customer_id: " + e.getMessage());
-        }
+        String createdLabel = "";
+        instance.setCustomer_id(UUID.randomUUID());
         System.out.print("Enter name (string): ");
         try {
             String val = scanner.nextLine();
             instance.setName(val);
+            createdLabel = val;
         } catch (Exception e) {
             System.out.println("Error setting name: " + e.getMessage());
         }
@@ -122,7 +209,7 @@ public class InteractiveApp {
         } catch (Exception e) {
             System.out.println("Error setting email: " + e.getMessage());
         }
-        System.out.println("Created instance with ID: " + instance.getInstanceId());
+        System.out.println("Success! Customer '" + createdLabel + "' has been registered.");
     }
 
     private static void selectCustomer() {
@@ -133,7 +220,7 @@ public class InteractiveApp {
         }
 
         for (int i = 0; i < instances.size(); i++) {
-            System.out.println((i + 1) + ". " + instances.get(i).getInstanceId() + " [" + instances.get(i).getClass().getSimpleName() + "]");
+            System.out.println((i + 1) + ". " + instances.get(i).getName() + " (ID: " + instances.get(i).getInstanceId().toString().substring(0,8) + "...)");
         }
         System.out.print("Select instance: ");
         try {
@@ -150,7 +237,7 @@ public class InteractiveApp {
 
     private static void interactWithCustomer(Customer instance) {
         while (true) {
-            System.out.println("\n--- Interact with Customer : " + instance.getInstanceId() + " ---");
+            System.out.println("\n--- Action for Customer '" + instance.getName() + "' ---");
             System.out.println("1. Back");
             System.out.print("Choose action: ");
             try {
@@ -186,28 +273,13 @@ public class InteractiveApp {
     private static void createPSConsole() {
         System.out.println("Creating PSConsole...");
         PSConsole instance = new PSConsole();
-        System.out.print("Enter console_id (id): ");
-        try {
-            String val = scanner.nextLine();
-            // ID handling: input string is converted to UUID bytes or hash?
-            // For simplicity, we'll try to parse or generate random if empty
-            if (val.trim().isEmpty()) {
-                instance.setConsole_id(UUID.randomUUID());
-            } else {
-                try {
-                    instance.setConsole_id(UUID.fromString(val));
-                } catch (IllegalArgumentException e) {
-                    // Fallback for non-standard UUID strings
-                    instance.setConsole_id(UUID.nameUUIDFromBytes(val.getBytes()));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error setting console_id: " + e.getMessage());
-        }
+        String createdLabel = "";
+        instance.setConsole_id(UUID.randomUUID());
         System.out.print("Enter model (string): ");
         try {
             String val = scanner.nextLine();
             instance.setModel(val);
+            createdLabel = val;
         } catch (Exception e) {
             System.out.println("Error setting model: " + e.getMessage());
         }
@@ -218,7 +290,8 @@ public class InteractiveApp {
         } catch (Exception e) {
             System.out.println("Error setting availability: " + e.getMessage());
         }
-        System.out.println("Created instance with ID: " + instance.getInstanceId());
+        instance.setRate_id(UUID.randomUUID());
+        System.out.println("Success! PSConsole '" + createdLabel + "' has been registered.");
     }
 
     private static void selectPSConsole() {
@@ -229,7 +302,7 @@ public class InteractiveApp {
         }
 
         for (int i = 0; i < instances.size(); i++) {
-            System.out.println((i + 1) + ". " + instances.get(i).getInstanceId() + " [" + instances.get(i).getClass().getSimpleName() + "]");
+            System.out.println((i + 1) + ". " + instances.get(i).getModel() + " (ID: " + instances.get(i).getInstanceId().toString().substring(0,8) + "...)");
         }
         System.out.print("Select instance: ");
         try {
@@ -246,7 +319,7 @@ public class InteractiveApp {
 
     private static void interactWithPSConsole(PSConsole instance) {
         while (true) {
-            System.out.println("\n--- Interact with PSConsole : " + instance.getInstanceId() + " ---");
+            System.out.println("\n--- Action for PSConsole '" + instance.getModel() + "' ---");
             System.out.println("[Events]");
             System.out.println("1. setAvailable");
             System.out.println("2. onAvailable");
@@ -259,7 +332,6 @@ public class InteractiveApp {
                 int action = Integer.parseInt(scanner.nextLine());
                 if (action == 6) return;
                 if (action >= 1 && action <= 5) {
-                    // Fire Event
                     int eventId = 0;
                     switch(action) {
                         case 1: eventId = PSConsole.EVENT_SETAVAILABLE; break;
@@ -304,24 +376,7 @@ public class InteractiveApp {
     private static void createRate() {
         System.out.println("Creating Rate...");
         Rate instance = new Rate();
-        System.out.print("Enter rate_id (id): ");
-        try {
-            String val = scanner.nextLine();
-            // ID handling: input string is converted to UUID bytes or hash?
-            // For simplicity, we'll try to parse or generate random if empty
-            if (val.trim().isEmpty()) {
-                instance.setRate_id(UUID.randomUUID());
-            } else {
-                try {
-                    instance.setRate_id(UUID.fromString(val));
-                } catch (IllegalArgumentException e) {
-                    // Fallback for non-standard UUID strings
-                    instance.setRate_id(UUID.nameUUIDFromBytes(val.getBytes()));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error setting rate_id: " + e.getMessage());
-        }
+        instance.setRate_id(UUID.randomUUID());
         System.out.print("Enter price_per_hour (decimal): ");
         try {
             String val = scanner.nextLine();
@@ -329,7 +384,7 @@ public class InteractiveApp {
         } catch (Exception e) {
             System.out.println("Error setting price_per_hour: " + e.getMessage());
         }
-        System.out.println("Created instance with ID: " + instance.getInstanceId());
+        System.out.println("Success! Rate instance created.");
     }
 
     private static void selectRate() {
@@ -340,7 +395,7 @@ public class InteractiveApp {
         }
 
         for (int i = 0; i < instances.size(); i++) {
-            System.out.println((i + 1) + ". " + instances.get(i).getInstanceId() + " [" + instances.get(i).getClass().getSimpleName() + "]");
+            System.out.println((i + 1) + ". " + instances.get(i).getInstanceId() + " (ID: " + instances.get(i).getInstanceId().toString().substring(0,8) + "...)");
         }
         System.out.print("Select instance: ");
         try {
@@ -357,7 +412,7 @@ public class InteractiveApp {
 
     private static void interactWithRate(Rate instance) {
         while (true) {
-            System.out.println("\n--- Interact with Rate : " + instance.getInstanceId() + " ---");
+            System.out.println("\n--- Action for Rate '" + instance.getInstanceId() + "' ---");
             System.out.println("[Operations]");
             System.out.println("1. calculate_tax");
             System.out.println("2. Back");
@@ -366,7 +421,6 @@ public class InteractiveApp {
                 int action = Integer.parseInt(scanner.nextLine());
                 if (action == 2) return;
                 else if (action >= 1 && action <= 1) {
-                    // Execute Operation
                     switch(action) {
                         case 1: 
                             System.out.println("Result: " + instance.calculate_tax());
@@ -403,24 +457,9 @@ public class InteractiveApp {
     private static void createRental() {
         System.out.println("Creating Rental...");
         Rental instance = new Rental();
-        System.out.print("Enter rental_id (id): ");
-        try {
-            String val = scanner.nextLine();
-            // ID handling: input string is converted to UUID bytes or hash?
-            // For simplicity, we'll try to parse or generate random if empty
-            if (val.trim().isEmpty()) {
-                instance.setRental_id(UUID.randomUUID());
-            } else {
-                try {
-                    instance.setRental_id(UUID.fromString(val));
-                } catch (IllegalArgumentException e) {
-                    // Fallback for non-standard UUID strings
-                    instance.setRental_id(UUID.nameUUIDFromBytes(val.getBytes()));
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Error setting rental_id: " + e.getMessage());
-        }
+        instance.setRental_id(UUID.randomUUID());
+        instance.setCustomer_id(UUID.randomUUID());
+        instance.setConsole_id(UUID.randomUUID());
         System.out.print("Enter start_time (datetime): ");
         try {
             String val = scanner.nextLine();
@@ -450,7 +489,7 @@ public class InteractiveApp {
         } catch (Exception e) {
             System.out.println("Error setting status: " + e.getMessage());
         }
-        System.out.println("Created instance with ID: " + instance.getInstanceId());
+        System.out.println("Success! Rental instance created.");
     }
 
     private static void selectRental() {
@@ -461,7 +500,7 @@ public class InteractiveApp {
         }
 
         for (int i = 0; i < instances.size(); i++) {
-            System.out.println((i + 1) + ". " + instances.get(i).getInstanceId() + " [" + instances.get(i).getClass().getSimpleName() + "]");
+            System.out.println((i + 1) + ". " + instances.get(i).getInstanceId() + " (ID: " + instances.get(i).getInstanceId().toString().substring(0,8) + "...)");
         }
         System.out.print("Select instance: ");
         try {
@@ -478,7 +517,7 @@ public class InteractiveApp {
 
     private static void interactWithRental(Rental instance) {
         while (true) {
-            System.out.println("\n--- Interact with Rental : " + instance.getInstanceId() + " ---");
+            System.out.println("\n--- Action for Rental '" + instance.getInstanceId() + "' ---");
             System.out.println("[Events]");
             System.out.println("1. pay_confirmed");
             System.out.println("2. cancel_request");
@@ -493,7 +532,6 @@ public class InteractiveApp {
                 int action = Integer.parseInt(scanner.nextLine());
                 if (action == 8) return;
                 if (action >= 1 && action <= 7) {
-                    // Fire Event
                     int eventId = 0;
                     switch(action) {
                         case 1: eventId = Rental.EVENT_PAY_CONFIRMED; break;

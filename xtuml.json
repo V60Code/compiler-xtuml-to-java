@@ -1,0 +1,264 @@
+{
+  "type": "subsystem",
+  "sub_id": "s1",
+  "sub_name": "rental_ps",
+  "model": [
+    {
+      "type": "class",
+      "class_id": "1",
+      "class_name": "Customer",
+      "KL": "Cst",
+      "attributes": [
+        {
+          "attribute_type": "naming_attribute",
+          "attribute_name": "customer_id",
+          "data_type": "id"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "name",
+          "data_type": "string"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "contact",
+          "data_type": "string"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "email",
+          "data_type": "string"
+        }
+      ]
+    },
+    {
+      "type": "class",
+      "class_id": "2",
+      "class_name": "PSConsole",
+      "KL": "PSC",
+      "attributes": [
+        {
+          "attribute_type": "naming_attribute",
+          "attribute_name": "console_id",
+          "data_type": "id"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "model",
+          "data_type": "string"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "availability",
+          "default_value": "states.available",
+          "data_type": "state"
+        },
+        {
+          "attribute_type": "referential_attribute",
+          "attribute_name": "rate_id",
+          "data_type": "id"
+        }
+      ],
+      "states": [
+        {
+          "state_id": "1",
+          "state_name": "available",
+          "state_value": "available",
+          "state_type": "string",
+          "state_event": [
+            "setAvailable",
+            "onAvailable"
+          ],
+          "action": "Bridge::log(\"Console is now available for rent.\");"
+        },
+        {
+          "state_id": "2",
+          "state_name": "rented",
+          "state_value": "rented",
+          "state_type": "string",
+          "state_event": [
+            "setRented",
+            "onRented"
+          ],
+          "action": "Bridge::log(\"Console has been rented.\"); create timer t1 event setAvailable to self delay 3600;"
+        },
+        {
+          "state_id": "3",
+          "state_name": "maintenance",
+          "state_value": "maintenance",
+          "state_type": "string",
+          "state_event": [
+            "setMaintenance"
+          ],
+          "action": "Bridge::log(\"Console is under maintenance.\"); create date now;"
+        }
+      ]
+    },
+    {
+      "type": "class",
+      "class_id": "3",
+      "class_name": "Rate",
+      "KL": "Rte",
+      "attributes": [
+        {
+          "attribute_type": "naming_attribute",
+          "attribute_name": "rate_id",
+          "data_type": "id"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "price_per_hour",
+          "data_type": "decimal"
+        }
+      ],
+      "operations": [
+        {
+          "name": "calculate_tax",
+          "return_type": "decimal",
+          "action": "tax = 1000 * 0.1;"
+        }
+      ]
+    },
+    {
+      "type": "class",
+      "class_id": "4",
+      "class_name": "Rental",
+      "KL": "Rnt",
+      "attributes": [
+        {
+          "attribute_type": "naming_attribute",
+          "attribute_name": "rental_id",
+          "data_type": "id"
+        },
+        {
+          "attribute_type": "referential_attribute",
+          "attribute_name": "customer_id",
+          "data_type": "id"
+        },
+        {
+          "attribute_type": "referential_attribute",
+          "attribute_name": "console_id",
+          "data_type": "id"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "start_time",
+          "data_type": "datetime"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "end_time",
+          "data_type": "datetime"
+        },
+        {
+          "attribute_type": "descriptive_attribute",
+          "attribute_name": "status",
+          "default_value": "states.pending",
+          "data_type": "state"
+        }
+      ],
+      "states": [
+        {
+          "state_id": "1",
+          "state_name": "Pending",
+          "state_value": "pending",
+          "state_type": "string",
+          "state_event": [
+            "pay_confirmed",
+            "cancel_request"
+          ],
+          "action": "Bridge::log(\"Rental request pending payment.\");"
+        },
+        {
+          "state_id": "2",
+          "state_name": "Rented",
+          "state_value": "rented",
+          "state_type": "string",
+          "state_event": [
+            "end_time_passed",
+            "unit_returned"
+          ],
+          "action": "create date now; Bridge::log(\"Unit rented successfully.\"); select any console from instances of PSConsole where availability == \"available\"; relate self to console across R2;"
+        },
+        {
+          "state_id": "3",
+          "state_name": "Expired",
+          "state_value": "expired",
+          "state_type": "string",
+          "state_event": [
+            "setExpired"
+          ],
+          "action": "Bridge::log(\"Rental expired.\"); select one console related by self->PSConsole[R2]; unrelate self from console across R2;"
+        },
+        {
+          "state_id": "4",
+          "state_name": "Completed",
+          "state_value": "completed",
+          "state_type": "string",
+          "state_event": [
+            "setCompleted"
+          ],
+          "action": "Bridge::log(\"Rental completed.\"); if (end_time == null) ; Bridge::log(\"Early return suspected\"); end if"
+        },
+        {
+          "state_id": "5",
+          "state_name": "Canceled",
+          "state_value": "canceled",
+          "state_type": "string",
+          "state_event": [
+            "setCanceled"
+          ],
+          "action": "Bridge::log(\"Rental canceled.\"); delete self;"
+        }
+      ]
+    },
+    {
+      "type": "association",
+      "name": "R1",
+      "class": [
+        {
+          "class_id": "1",
+          "class_name": "Customer",
+          "class_multiplicity": "1..*"
+        },
+        {
+          "class_id": "4",
+          "class_name": "Rental",
+          "class_multiplicity": "0..*"
+        }
+      ]
+    },
+    {
+      "type": "association",
+      "name": "R2",
+      "class": [
+        {
+          "class_id": "4",
+          "class_name": "Rental",
+          "class_multiplicity": "1..1"
+        },
+        {
+          "class_id": "2",
+          "class_name": "PSConsole",
+          "class_multiplicity": "1..1"
+        }
+      ]
+    },
+    {
+      "type": "association",
+      "name": "R3",
+      "class": [
+        {
+          "class_id": "2",
+          "class_name": "PSConsole",
+          "class_multiplicity": "1..1"
+        },
+        {
+          "class_id": "3",
+          "class_name": "Rate",
+          "class_multiplicity": "1..*"
+        }
+      ]
+    }
+  ]
+}

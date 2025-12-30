@@ -1,0 +1,23 @@
+komponen:
+
+- control logic
+- instance creation
+- instance selection
+- writing attributes
+- reading attributes
+- instance deletion
+- creating instances of a relationship
+- deleting instance of a relationship
+- instance selection by relationship navigation
+- creating events
+- genereting events
+- accessing event data
+- arithmetic, logical, and string assignment
+- unary operators
+- operations
+- bridges
+- functions
+- inter-component messageing
+- object action langunage for non-state actions
+- data and time
+- timers

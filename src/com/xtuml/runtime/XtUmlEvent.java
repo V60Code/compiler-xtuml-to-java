@@ -1,6 +1,7 @@
 package com.xtuml.runtime;
 
 import java.util.UUID;
+import java.util.Map;
 
 /**
  * Represents a signal or event in the xtUML system.
@@ -8,13 +9,11 @@ import java.util.UUID;
  */
 public class XtUmlEvent {
 
-    private UUID targetInstanceId;
-    private int eventId;
-    private java.util.Map<String, Object> data;
+    private final UUID targetInstanceId;
     private final int eventId;
 
     // [CRITERIA 7] Event Parameter (Data Payload)
-    private final Object data;
+    private final Map<String, Object> data;
 
     /**
      * Constructs a new event.
@@ -23,7 +22,7 @@ public class XtUmlEvent {
      * @param eventId          The integer ID of the event/signal.
      * @param data             Optional named data parameters carried by the event.
      */
-    public XtUmlEvent(UUID targetInstanceId, int eventId, Object data) {
+    public XtUmlEvent(UUID targetInstanceId, int eventId, Map<String, Object> data) {
         this.targetInstanceId = targetInstanceId;
         this.eventId = eventId;
         this.data = data;
@@ -37,7 +36,7 @@ public class XtUmlEvent {
         return eventId;
     }
 
-    public java.util.Map<String, Object> getData() {
+    public Map<String, Object> getData() {
         return data;
     }
 

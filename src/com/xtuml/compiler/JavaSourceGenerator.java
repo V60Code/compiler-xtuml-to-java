@@ -235,6 +235,18 @@ public class JavaSourceGenerator {
         if (clazz.getStates() == null)
             return;
 
+        // [CRITERIA 5] Auto-Sync State Attribute
+        // Detect if there is an attribute of type 'state' (e.g., availability)
+        String stateAttr = null;
+        if (clazz.getAttributes() != null) {
+            for (Attribute attr : clazz.getAttributes()) {
+                if ("state".equalsIgnoreCase(attr.getDataType())) {
+                    stateAttr = attr.getAttributeName();
+                    break;
+                }
+            }
+        }
+
         ActionTranslator translator = new ActionTranslator();
 
         for (com.xtuml.compiler.model.State state : clazz.getStates()) {
@@ -242,6 +254,12 @@ public class JavaSourceGenerator {
             String methodName = "action_" + stateEnum;
 
             sb.append("    private void ").append(methodName).append("(XtUmlEvent rcvd_evt) {\n");
+            
+            // Inject State Attribute Update
+            if (stateAttr != null && state.getStateValue() != null) {
+                 sb.append("        this.").append(stateAttr).append(" = \"").append(state.getStateValue()).append("\";\n");
+            }
+
             sb.append("        System.out.println(\"Entering state: ").append(stateEnum).append("\");\n");
 
             // Logic Injection from JSON
